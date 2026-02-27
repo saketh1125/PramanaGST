@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# NodeJS
+node_modules/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Application specific
+logs/
+backend/ingestion/dataset/generated_data/

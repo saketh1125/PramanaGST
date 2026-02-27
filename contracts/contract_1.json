@@ -1,0 +1,953 @@
+{
+  "contract": "INGESTION <-> KNOWLEDGE GRAPH INTERFACE",
+  "version": "1.0.0",
+  "entities": {
+    "TAXPAYER": {
+      "$defs": {
+        "GSTRegistrationStatus": {
+          "description": "Current status of a GST registration.",
+          "enum": [
+            "ACTIVE",
+            "CANCELLED",
+            "SUSPENDED",
+            "INACTIVE"
+          ],
+          "title": "GSTRegistrationStatus",
+          "type": "string"
+        },
+        "GSTRegistrationType": {
+          "description": "Type of GST registration held by a taxpayer.",
+          "enum": [
+            "REGULAR",
+            "COMPOSITION",
+            "ISD",
+            "TDS",
+            "TCS",
+            "CASUAL",
+            "SEZ",
+            "NRTP"
+          ],
+          "title": "GSTRegistrationType",
+          "type": "string"
+        }
+      },
+      "contract_version": "1.0.0",
+      "description": "Canonical schema for the TAXPAYER entity.\n\nThe GSTIN (Goods and Services Tax Identification Number) is the primary\nidentifier \u2014 a 15-character alphanumeric code whose first two digits\nencode the state code and whose characters 3\u201312 mirror the PAN.",
+      "entity": "TAXPAYER",
+      "properties": {
+        "gstin": {
+          "description": "15-character GSTIN identifier",
+          "examples": [
+            "27AAPFU0939F1ZV"
+          ],
+          "maxLength": 15,
+          "minLength": 15,
+          "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+          "title": "Gstin",
+          "type": "string"
+        },
+        "legalName": {
+          "description": "Legal name of the registered entity",
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Legalname",
+          "type": "string"
+        },
+        "tradeName": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Trading name, if different from legal name",
+          "title": "Tradename"
+        },
+        "registrationType": {
+          "$ref": "#/$defs/GSTRegistrationType",
+          "description": "Type of GST registration"
+        },
+        "registrationStatus": {
+          "$ref": "#/$defs/GSTRegistrationStatus",
+          "description": "Current registration status"
+        },
+        "registrationDate": {
+          "description": "Date of GST registration",
+          "format": "date",
+          "title": "Registrationdate",
+          "type": "string"
+        },
+        "cancellationDate": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Date of registration cancellation, if applicable",
+          "title": "Cancellationdate"
+        },
+        "stateCode": {
+          "description": "Two-digit state jurisdiction code",
+          "examples": [
+            "27"
+          ],
+          "maxLength": 2,
+          "minLength": 2,
+          "pattern": "^[0-9]{2}$",
+          "title": "Statecode",
+          "type": "string"
+        },
+        "pan": {
+          "description": "10-character PAN of the taxpayer",
+          "examples": [
+            "AAPFU0939F"
+          ],
+          "maxLength": 10,
+          "minLength": 10,
+          "pattern": "^[A-Z]{5}[0-9]{4}[A-Z]{1}$",
+          "title": "Pan",
+          "type": "string"
+        }
+      },
+      "required": [
+        "gstin",
+        "legalName",
+        "registrationType",
+        "registrationStatus",
+        "registrationDate",
+        "stateCode",
+        "pan"
+      ],
+      "title": "Taxpayer",
+      "type": "object"
+    },
+    "INVOICE": {
+      "$defs": {
+        "DocumentType": {
+          "description": "Type of e-invoice document.",
+          "enum": [
+            "INV",
+            "CRN",
+            "DBN"
+          ],
+          "title": "DocumentType",
+          "type": "string"
+        },
+        "InvoiceStatus": {
+          "description": "Current status of an invoice.",
+          "enum": [
+            "ACTIVE",
+            "CANCELLED",
+            "AMENDED"
+          ],
+          "title": "InvoiceStatus",
+          "type": "string"
+        },
+        "InvoiceType": {
+          "description": "Classification of invoice by supply category.",
+          "enum": [
+            "B2B",
+            "B2C",
+            "CDNR",
+            "CDNUR",
+            "EXPORT",
+            "SEZ",
+            "NIL_RATED",
+            "ADVANCE"
+          ],
+          "title": "InvoiceType",
+          "type": "string"
+        },
+        "SupplyType": {
+          "description": "Whether the supply is intra-state or inter-state.",
+          "enum": [
+            "INTRA_STATE",
+            "INTER_STATE"
+          ],
+          "title": "SupplyType",
+          "type": "string"
+        }
+      },
+      "contract_version": "1.0.0",
+      "description": "Canonical schema for the INVOICE entity.\n\nMonetary fields use Decimal for financial precision.\nThe filing_period is encoded as MMYYYY (e.g., \"012026\" for Jan 2026).",
+      "entity": "INVOICE",
+      "properties": {
+        "invoiceNumber": {
+          "description": "Unique invoice number",
+          "maxLength": 50,
+          "minLength": 1,
+          "title": "Invoicenumber",
+          "type": "string"
+        },
+        "invoiceDate": {
+          "description": "Date of invoice issuance",
+          "format": "date",
+          "title": "Invoicedate",
+          "type": "string"
+        },
+        "invoiceType": {
+          "$ref": "#/$defs/InvoiceType",
+          "description": "Classification of the invoice (B2B, B2C, etc.)"
+        },
+        "invoiceStatus": {
+          "$ref": "#/$defs/InvoiceStatus",
+          "description": "Current status of the invoice"
+        },
+        "supplyType": {
+          "$ref": "#/$defs/SupplyType",
+          "description": "Whether the supply is intra-state or inter-state"
+        },
+        "documentType": {
+          "$ref": "#/$defs/DocumentType",
+          "description": "Document type \u2014 INV, CRN, or DBN"
+        },
+        "supplierGstin": {
+          "description": "GSTIN of the supplier",
+          "maxLength": 15,
+          "minLength": 15,
+          "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+          "title": "Suppliergstin",
+          "type": "string"
+        },
+        "recipientGstin": {
+          "anyOf": [
+            {
+              "maxLength": 15,
+              "minLength": 15,
+              "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "GSTIN of the recipient (None for B2C transactions)",
+          "title": "Recipientgstin"
+        },
+        "taxableValue": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Pre-tax invoice amount",
+          "title": "Taxablevalue"
+        },
+        "igstAmount": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "IGST component",
+          "title": "Igstamount"
+        },
+        "cgstAmount": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "CGST component",
+          "title": "Cgstamount"
+        },
+        "sgstAmount": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "SGST component",
+          "title": "Sgstamount"
+        },
+        "cessAmount": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Cess component",
+          "title": "Cessamount"
+        },
+        "totalValue": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Total invoice value (taxable + all taxes)",
+          "title": "Totalvalue"
+        },
+        "placeOfSupply": {
+          "description": "Two-digit state code for place of supply",
+          "examples": [
+            "27"
+          ],
+          "maxLength": 2,
+          "minLength": 2,
+          "pattern": "^[0-9]{2}$",
+          "title": "Placeofsupply",
+          "type": "string"
+        },
+        "reverseCharge": {
+          "description": "Whether reverse charge mechanism is applicable",
+          "title": "Reversecharge",
+          "type": "boolean"
+        },
+        "irn": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Linked Invoice Reference Number, if e-invoiced",
+          "title": "Irn"
+        },
+        "filingPeriod": {
+          "description": "Filing period in MMYYYY format",
+          "examples": [
+            "012026"
+          ],
+          "maxLength": 6,
+          "minLength": 6,
+          "pattern": "^(0[1-9]|1[0-2])\\d{4}$",
+          "title": "Filingperiod",
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoiceNumber",
+        "invoiceDate",
+        "invoiceType",
+        "invoiceStatus",
+        "supplyType",
+        "documentType",
+        "supplierGstin",
+        "taxableValue",
+        "igstAmount",
+        "cgstAmount",
+        "sgstAmount",
+        "cessAmount",
+        "totalValue",
+        "placeOfSupply",
+        "reverseCharge",
+        "filingPeriod"
+      ],
+      "title": "Invoice",
+      "type": "object"
+    },
+    "RETURN": {
+      "$defs": {
+        "GSTReturnType": {
+          "description": "Type of GST return filed.",
+          "enum": [
+            "GSTR1",
+            "GSTR2A",
+            "GSTR2B",
+            "GSTR3B",
+            "GSTR9",
+            "GSTR9C"
+          ],
+          "title": "GSTReturnType",
+          "type": "string"
+        },
+        "ReturnFilingStatus": {
+          "description": "Filing status of a GST return.",
+          "enum": [
+            "FILED",
+            "NOT_FILED",
+            "LATE_FILED",
+            "REVISED"
+          ],
+          "title": "ReturnFilingStatus",
+          "type": "string"
+        }
+      },
+      "contract_version": "1.0.0",
+      "description": "Canonical schema for the RETURN entity.\n\nCaptures both the tax liability side (total_igst, total_cgst, etc.)\nand the ITC claim side (itc_claimed_igst, itc_claimed_cgst, etc.)\nfor a single return filing period.",
+      "entity": "RETURN",
+      "properties": {
+        "returnId": {
+          "description": "Unique return identifier",
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Returnid",
+          "type": "string"
+        },
+        "gstin": {
+          "description": "GSTIN of the filer",
+          "maxLength": 15,
+          "minLength": 15,
+          "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+          "title": "Gstin",
+          "type": "string"
+        },
+        "returnType": {
+          "$ref": "#/$defs/GSTReturnType",
+          "description": "Type of return (GSTR1, GSTR3B, etc.)"
+        },
+        "returnPeriod": {
+          "description": "Filing period in MMYYYY format",
+          "examples": [
+            "012026"
+          ],
+          "maxLength": 6,
+          "minLength": 6,
+          "pattern": "^(0[1-9]|1[0-2])\\d{4}$",
+          "title": "Returnperiod",
+          "type": "string"
+        },
+        "filingDate": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Date on which the return was filed",
+          "title": "Filingdate"
+        },
+        "filingStatus": {
+          "$ref": "#/$defs/ReturnFilingStatus",
+          "description": "Current filing status"
+        },
+        "totalTaxableValue": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Total taxable turnover for the period",
+          "title": "Totaltaxablevalue"
+        },
+        "totalIgst": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Total IGST liability",
+          "title": "Totaligst"
+        },
+        "totalCgst": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Total CGST liability",
+          "title": "Totalcgst"
+        },
+        "totalSgst": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Total SGST liability",
+          "title": "Totalsgst"
+        },
+        "totalCess": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Total cess liability",
+          "title": "Totalcess"
+        },
+        "totalTaxLiability": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Sum of all tax components",
+          "title": "Totaltaxliability"
+        },
+        "itcClaimedIgst": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Input Tax Credit claimed \u2014 IGST",
+          "title": "Itcclaimedigst"
+        },
+        "itcClaimedCgst": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Input Tax Credit claimed \u2014 CGST",
+          "title": "Itcclaimedcgst"
+        },
+        "itcClaimedSgst": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Input Tax Credit claimed \u2014 SGST",
+          "title": "Itcclaimedsgst"
+        },
+        "itcClaimedCess": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Input Tax Credit claimed \u2014 Cess",
+          "title": "Itcclaimedcess"
+        }
+      },
+      "required": [
+        "returnId",
+        "gstin",
+        "returnType",
+        "returnPeriod",
+        "filingStatus",
+        "totalTaxableValue",
+        "totalIgst",
+        "totalCgst",
+        "totalSgst",
+        "totalCess",
+        "totalTaxLiability",
+        "itcClaimedIgst",
+        "itcClaimedCgst",
+        "itcClaimedSgst",
+        "itcClaimedCess"
+      ],
+      "title": "ReturnFiling",
+      "type": "object"
+    },
+    "PAYMENT": {
+      "$defs": {
+        "PaymentMode": {
+          "description": "Mode through which GST was paid.",
+          "enum": [
+            "CASH",
+            "ITC_IGST",
+            "ITC_CGST",
+            "ITC_SGST",
+            "ITC_CESS"
+          ],
+          "title": "PaymentMode",
+          "type": "string"
+        },
+        "PaymentStatus": {
+          "description": "Current status of a GST payment.",
+          "enum": [
+            "PAID",
+            "PENDING",
+            "PARTIAL",
+            "FAILED"
+          ],
+          "title": "PaymentStatus",
+          "type": "string"
+        }
+      },
+      "contract_version": "1.0.0",
+      "description": "Canonical schema for the PAYMENT entity.\n\nEach payment is linked to a GSTIN and a return period.\nPayment may be through cash ledger or ITC utilization.",
+      "entity": "PAYMENT",
+      "properties": {
+        "paymentId": {
+          "description": "Unique payment identifier",
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Paymentid",
+          "type": "string"
+        },
+        "gstin": {
+          "description": "GSTIN of the payer",
+          "maxLength": 15,
+          "minLength": 15,
+          "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+          "title": "Gstin",
+          "type": "string"
+        },
+        "returnPeriod": {
+          "description": "Return period for which payment is made (MMYYYY)",
+          "examples": [
+            "012026"
+          ],
+          "maxLength": 6,
+          "minLength": 6,
+          "pattern": "^(0[1-9]|1[0-2])\\d{4}$",
+          "title": "Returnperiod",
+          "type": "string"
+        },
+        "paymentDate": {
+          "description": "Date of payment",
+          "format": "date",
+          "title": "Paymentdate",
+          "type": "string"
+        },
+        "paymentMode": {
+          "$ref": "#/$defs/PaymentMode",
+          "description": "Mode of payment (CASH, ITC_IGST, etc.)"
+        },
+        "paymentStatus": {
+          "$ref": "#/$defs/PaymentStatus",
+          "description": "Current payment status"
+        },
+        "igstPaid": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "IGST component paid",
+          "title": "Igstpaid"
+        },
+        "cgstPaid": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "CGST component paid",
+          "title": "Cgstpaid"
+        },
+        "sgstPaid": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "SGST component paid",
+          "title": "Sgstpaid"
+        },
+        "cessPaid": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Cess component paid",
+          "title": "Cesspaid"
+        },
+        "totalPaid": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,13}|(?=[\\d.]{1,16}0*$)\\d{0,13}\\.\\d{0,2}0*$)",
+              "type": "string"
+            }
+          ],
+          "description": "Total payment amount",
+          "title": "Totalpaid"
+        },
+        "challanNumber": {
+          "anyOf": [
+            {
+              "maxLength": 50,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CIN / Challan identification number",
+          "title": "Challannumber"
+        },
+        "bankReference": {
+          "anyOf": [
+            {
+              "maxLength": 50,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bank reference number (BRN)",
+          "title": "Bankreference"
+        }
+      },
+      "required": [
+        "paymentId",
+        "gstin",
+        "returnPeriod",
+        "paymentDate",
+        "paymentMode",
+        "paymentStatus",
+        "igstPaid",
+        "cgstPaid",
+        "sgstPaid",
+        "cessPaid",
+        "totalPaid"
+      ],
+      "title": "Payment",
+      "type": "object"
+    },
+    "IRN": {
+      "$defs": {
+        "DocumentType": {
+          "description": "Type of e-invoice document.",
+          "enum": [
+            "INV",
+            "CRN",
+            "DBN"
+          ],
+          "title": "DocumentType",
+          "type": "string"
+        },
+        "IRNStatus": {
+          "description": "Current status of an Invoice Reference Number.",
+          "enum": [
+            "ACTIVE",
+            "CANCELLED"
+          ],
+          "title": "IRNStatus",
+          "type": "string"
+        }
+      },
+      "contract_version": "1.0.0",
+      "description": "Canonical schema for the IRN entity.\n\nThe IRN is a 64-character hash uniquely identifying an e-invoice.\nIt links back to the source invoice and carries the IRP\nacknowledgement metadata.",
+      "entity": "IRN",
+      "properties": {
+        "irn": {
+          "description": "64-character IRN hash",
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Irn",
+          "type": "string"
+        },
+        "irnDate": {
+          "description": "Timestamp when the IRN was generated",
+          "format": "date-time",
+          "title": "Irndate",
+          "type": "string"
+        },
+        "irnStatus": {
+          "$ref": "#/$defs/IRNStatus",
+          "description": "Current status of the IRN (ACTIVE / CANCELLED)"
+        },
+        "invoiceNumber": {
+          "description": "Invoice number linked to this IRN",
+          "maxLength": 50,
+          "minLength": 1,
+          "title": "Invoicenumber",
+          "type": "string"
+        },
+        "supplierGstin": {
+          "description": "Supplier GSTIN",
+          "maxLength": 15,
+          "minLength": 15,
+          "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+          "title": "Suppliergstin",
+          "type": "string"
+        },
+        "documentType": {
+          "$ref": "#/$defs/DocumentType",
+          "description": "Document type \u2014 INV, CRN, or DBN"
+        },
+        "signedInvoice": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Signed JSON payload of the invoice",
+          "title": "Signedinvoice"
+        },
+        "signedQrCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Signed QR code data",
+          "title": "Signedqrcode"
+        },
+        "ackNumber": {
+          "description": "IRP acknowledgement number",
+          "maxLength": 50,
+          "minLength": 1,
+          "title": "Acknumber",
+          "type": "string"
+        },
+        "ackDate": {
+          "description": "IRP acknowledgement timestamp",
+          "format": "date-time",
+          "title": "Ackdate",
+          "type": "string"
+        },
+        "cancellationDate": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Timestamp of IRN cancellation, if applicable",
+          "title": "Cancellationdate"
+        },
+        "cancellationReason": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Reason for IRN cancellation",
+          "title": "Cancellationreason"
+        }
+      },
+      "required": [
+        "irn",
+        "irnDate",
+        "irnStatus",
+        "invoiceNumber",
+        "supplierGstin",
+        "documentType",
+        "ackNumber",
+        "ackDate"
+      ],
+      "title": "IRN",
+      "type": "object"
+    }
+  }
+}

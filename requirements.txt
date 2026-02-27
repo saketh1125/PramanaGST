@@ -1,0 +1,6 @@
+fastapi
+pandas
+numpy
+pydantic
+neo4j
+faker

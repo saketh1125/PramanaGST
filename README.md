@@ -75,7 +75,6 @@ Run the server:
 uvicorn main:app --reload
 
 
-This README is structured to reflect the system truth and the fixed architecture of your Knowledge Graph-driven platform.
 
 It uses the FastAPI + Neo4j + React stack and aligns with the goals of ACM KLH HackWithAI.
 

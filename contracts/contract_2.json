@@ -1,0 +1,377 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PramanaGST Contract-2: Reconciliation Evidence",
+  "version": "1.0.0",
+  "definitions": {
+    "ReconItem": {
+      "$defs": {
+        "ReconStatus": {
+          "enum": [
+            "MATCHED",
+            "MISMATCHED",
+            "UNREPORTED"
+          ],
+          "title": "ReconStatus",
+          "type": "string"
+        }
+      },
+      "contract_version": "1.0.0",
+      "entity": "RECON_ITEM",
+      "properties": {
+        "claimRef": {
+          "description": "Claim observation reference",
+          "title": "Claimref",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ReconStatus",
+          "description": "Reconciliation outcome"
+        },
+        "invoiceNumber": {
+          "title": "Invoicenumber",
+          "type": "string"
+        },
+        "supplierGstin": {
+          "title": "Suppliergstin",
+          "type": "string"
+        },
+        "recipientGstin": {
+          "title": "Recipientgstin",
+          "type": "string"
+        },
+        "period": {
+          "description": "MMYYYY claim period",
+          "title": "Period",
+          "type": "string"
+        },
+        "itcClaimed": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Itcclaimed"
+        },
+        "invoiceTaxTotal": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "title": "Invoicetaxtotal"
+        },
+        "variance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "description": "invoice_tax_total - itc_claimed; 0 for matched/unreported",
+          "title": "Variance"
+        },
+        "evidencePath": {
+          "description": "Ordered node keys proving this outcome",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidencepath",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claimRef",
+        "status",
+        "invoiceNumber",
+        "supplierGstin",
+        "recipientGstin",
+        "period",
+        "itcClaimed",
+        "invoiceTaxTotal",
+        "variance",
+        "evidencePath"
+      ],
+      "title": "ReconItem",
+      "type": "object"
+    },
+    "ReconSummary": {
+      "contract_version": "1.0.0",
+      "entity": "RECON_SUMMARY",
+      "properties": {
+        "totalClaims": {
+          "minimum": 0,
+          "title": "Totalclaims",
+          "type": "integer"
+        },
+        "matched": {
+          "minimum": 0,
+          "title": "Matched",
+          "type": "integer"
+        },
+        "mismatched": {
+          "minimum": 0,
+          "title": "Mismatched",
+          "type": "integer"
+        },
+        "unreported": {
+          "minimum": 0,
+          "title": "Unreported",
+          "type": "integer"
+        },
+        "claimedTotal": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "description": "Total ITC claimed across all claims",
+          "title": "Claimedtotal"
+        },
+        "varianceTotal": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "description": "Net tax-at-risk across all findings",
+          "title": "Variancetotal"
+        },
+        "matchRate": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Matchrate",
+          "type": "number"
+        }
+      },
+      "required": [
+        "totalClaims",
+        "matched",
+        "mismatched",
+        "unreported",
+        "claimedTotal",
+        "varianceTotal",
+        "matchRate"
+      ],
+      "title": "ReconSummary",
+      "type": "object"
+    },
+    "ReconReport": {
+      "$defs": {
+        "ReconItem": {
+          "contract_version": "1.0.0",
+          "entity": "RECON_ITEM",
+          "properties": {
+            "claimRef": {
+              "description": "Claim observation reference",
+              "title": "Claimref",
+              "type": "string"
+            },
+            "status": {
+              "$ref": "#/$defs/ReconStatus",
+              "description": "Reconciliation outcome"
+            },
+            "invoiceNumber": {
+              "title": "Invoicenumber",
+              "type": "string"
+            },
+            "supplierGstin": {
+              "title": "Suppliergstin",
+              "type": "string"
+            },
+            "recipientGstin": {
+              "title": "Recipientgstin",
+              "type": "string"
+            },
+            "period": {
+              "description": "MMYYYY claim period",
+              "title": "Period",
+              "type": "string"
+            },
+            "itcClaimed": {
+              "anyOf": [
+                {
+                  "minimum": 0.0,
+                  "type": "number"
+                },
+                {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                  "type": "string"
+                }
+              ],
+              "title": "Itcclaimed"
+            },
+            "invoiceTaxTotal": {
+              "anyOf": [
+                {
+                  "minimum": 0.0,
+                  "type": "number"
+                },
+                {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                  "type": "string"
+                }
+              ],
+              "title": "Invoicetaxtotal"
+            },
+            "variance": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                  "type": "string"
+                }
+              ],
+              "description": "invoice_tax_total - itc_claimed; 0 for matched/unreported",
+              "title": "Variance"
+            },
+            "evidencePath": {
+              "description": "Ordered node keys proving this outcome",
+              "items": {
+                "type": "string"
+              },
+              "title": "Evidencepath",
+              "type": "array"
+            }
+          },
+          "required": [
+            "claimRef",
+            "status",
+            "invoiceNumber",
+            "supplierGstin",
+            "recipientGstin",
+            "period",
+            "itcClaimed",
+            "invoiceTaxTotal",
+            "variance",
+            "evidencePath"
+          ],
+          "title": "ReconItem",
+          "type": "object"
+        },
+        "ReconStatus": {
+          "enum": [
+            "MATCHED",
+            "MISMATCHED",
+            "UNREPORTED"
+          ],
+          "title": "ReconStatus",
+          "type": "string"
+        },
+        "ReconSummary": {
+          "contract_version": "1.0.0",
+          "entity": "RECON_SUMMARY",
+          "properties": {
+            "totalClaims": {
+              "minimum": 0,
+              "title": "Totalclaims",
+              "type": "integer"
+            },
+            "matched": {
+              "minimum": 0,
+              "title": "Matched",
+              "type": "integer"
+            },
+            "mismatched": {
+              "minimum": 0,
+              "title": "Mismatched",
+              "type": "integer"
+            },
+            "unreported": {
+              "minimum": 0,
+              "title": "Unreported",
+              "type": "integer"
+            },
+            "claimedTotal": {
+              "anyOf": [
+                {
+                  "minimum": 0.0,
+                  "type": "number"
+                },
+                {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                  "type": "string"
+                }
+              ],
+              "description": "Total ITC claimed across all claims",
+              "title": "Claimedtotal"
+            },
+            "varianceTotal": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                  "type": "string"
+                }
+              ],
+              "description": "Net tax-at-risk across all findings",
+              "title": "Variancetotal"
+            },
+            "matchRate": {
+              "maximum": 100,
+              "minimum": 0,
+              "title": "Matchrate",
+              "type": "number"
+            }
+          },
+          "required": [
+            "totalClaims",
+            "matched",
+            "mismatched",
+            "unreported",
+            "claimedTotal",
+            "varianceTotal",
+            "matchRate"
+          ],
+          "title": "ReconSummary",
+          "type": "object"
+        }
+      },
+      "contract_version": "1.0.0",
+      "entity": "RECON_REPORT",
+      "properties": {
+        "summary": {
+          "$ref": "#/$defs/ReconSummary"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ReconItem"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary",
+        "items"
+      ],
+      "title": "ReconReport",
+      "type": "object"
+    }
+  }
+}

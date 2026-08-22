@@ -12,6 +12,7 @@ import os
 from .batching.batch_builder import build_batch
 from .normalization.loader import load_datasets
 from .normalization.mappers import (
+    map_gstr1_return,
     map_gstr2b_return,
     map_invoice,
     map_irn,
@@ -71,13 +72,30 @@ class IngestService:
         for idx, row in enumerate(dfs["gstr1"].to_dict("records")):
             invoice_lookup[str(row["invoice_number"])] = row
             ref = f"{row['supplier_gstin']}|{row['invoice_number']}"
+            result = validate_entity(
+                "INVOICE", ref, "gstr1.csv", idx, map_invoice(row).model_dump(by_alias=True)
+            )
+            if not result.get("rejected"):
+                # refId is a graph identity, not a Contract-1 field — injected post-validation
+                result["data"]["refId"] = ref
+            _accept_or_reject(result, "gstr1.csv", idx)
+
+        # 3. GSTR-1 — one aggregated RETURN per supplier+period
+        g1_groups: dict[tuple[str, str], list[dict]] = {}
+        for row in dfs["gstr1"].to_dict("records"):
+            inv = map_invoice(row)
+            key = (inv.supplier_gstin, inv.filing_period)
+            g1_groups.setdefault(key, []).append(row)
+
+        for (supplier, period), rows in sorted(g1_groups.items()):
+            ret = map_gstr1_return(rows, supplier, period)
             _accept_or_reject(
-                validate_entity("INVOICE", ref, "gstr1.csv", idx, map_invoice(row).model_dump(by_alias=True)),
+                validate_entity("RETURN", ret.return_id, "gstr1.csv", 0, ret.model_dump(by_alias=True)),
                 "gstr1.csv",
-                idx,
+                0,
             )
 
-        # 3. GSTR-2B — one aggregated RETURN per recipient+period plus per-invoice observations
+        # 4. GSTR-2B — one aggregated RETURN per recipient+period plus per-invoice observations
         g2b_rows = [r for r in dfs["gstr2b"].to_dict("records")]
         groups: dict[tuple[str, str], list[dict]] = {}
         for row in g2b_rows:
@@ -97,7 +115,7 @@ class IngestService:
                 0,
             )
 
-        # 4. Payments
+        # 5. Payments
         for idx, row in enumerate(dfs["payments"].to_dict("records")):
             pay = map_payment(row)
             _accept_or_reject(
@@ -106,7 +124,7 @@ class IngestService:
                 idx,
             )
 
-        # 5. IRNs — need supplier via invoice lookup
+        # 6. IRNs — need supplier via invoice lookup
         for idx, row in enumerate(dfs["einvoice"].to_dict("records")):
             inv_num = str(row["invoice_number"])
             if inv_num not in invoice_lookup:

@@ -108,6 +108,37 @@ def map_gstr2b_return(rows: list[dict], recipient_gstin: str, period: str) -> Re
     )
 
 
+def map_gstr1_return(rows: list[dict], supplier_gstin: str, period: str) -> ReturnFiling:
+    """Aggregate supplier invoices into one GSTR-1 Return entity."""
+    taxable = sum(
+        (_d(r["invoice_value"]) - _d(r["igst_amount"]) - _d(r["cgst_amount"]) - _d(r["sgst_amount"]) for r in rows),
+        Decimal("0.00"),
+    )
+    igst = sum((_d(r["igst_amount"]) for r in rows), Decimal("0.00"))
+    cgst = sum((_d(r["cgst_amount"]) for r in rows), Decimal("0.00"))
+    sgst = sum((_d(r["sgst_amount"]) for r in rows), Decimal("0.00"))
+    year = int(period[2:])
+    month = int(period[:2])
+    return ReturnFiling(
+        returnId=f"GSTR1-{supplier_gstin}-{period}",
+        gstin=supplier_gstin,
+        returnType=GSTReturnType.GSTR1,
+        returnPeriod=period,
+        filingDate=date(year, month, calendar.monthrange(year, month)[1]),
+        filingStatus=ReturnFilingStatus.FILED,
+        totalTaxableValue=taxable,
+        totalIgst=igst,
+        totalCgst=cgst,
+        totalSgst=sgst,
+        totalCess=Decimal("0.00"),
+        totalTaxLiability=igst + cgst + sgst,
+        itcClaimedIgst=Decimal("0.00"),
+        itcClaimedCgst=Decimal("0.00"),
+        itcClaimedSgst=Decimal("0.00"),
+        itcClaimedCess=Decimal("0.00"),
+    )
+
+
 def map_payment(row: dict) -> Payment:
     period = row["return_period"]
     year = int(period[2:])

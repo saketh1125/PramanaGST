@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PramanaGST Contract-3: Risk Intelligence",
+  "version": "1.0.0",
+  "definitions": {
+    "RiskSignal": {
+      "contract_version": "1.0.0",
+      "entity": "RISK_SIGNAL",
+      "properties": {
+        "invoicesIssued": {
+          "minimum": 0,
+          "title": "Invoicesissued",
+          "type": "integer"
+        },
+        "mismatchedClaims": {
+          "minimum": 0,
+          "title": "Mismatchedclaims",
+          "type": "integer"
+        },
+        "unreportedInvoices": {
+          "minimum": 0,
+          "title": "Unreportedinvoices",
+          "type": "integer"
+        },
+        "taxLiability": {
+          "title": "Taxliability",
+          "type": "string"
+        },
+        "taxPaid": {
+          "title": "Taxpaid",
+          "type": "string"
+        },
+        "shortfall": {
+          "default": "0.00",
+          "title": "Shortfall",
+          "type": "string"
+        },
+        "inCycle": {
+          "title": "Incycle",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoicesIssued",
+        "mismatchedClaims",
+        "unreportedInvoices",
+        "taxLiability",
+        "taxPaid",
+        "inCycle"
+      ],
+      "title": "RiskSignal",
+      "type": "object"
+    },
+    "VendorRisk": {
+      "$defs": {
+        "RiskSignal": {
+          "contract_version": "1.0.0",
+          "entity": "RISK_SIGNAL",
+          "properties": {
+            "invoicesIssued": {
+              "minimum": 0,
+              "title": "Invoicesissued",
+              "type": "integer"
+            },
+            "mismatchedClaims": {
+              "minimum": 0,
+              "title": "Mismatchedclaims",
+              "type": "integer"
+            },
+            "unreportedInvoices": {
+              "minimum": 0,
+              "title": "Unreportedinvoices",
+              "type": "integer"
+            },
+            "taxLiability": {
+              "title": "Taxliability",
+              "type": "string"
+            },
+            "taxPaid": {
+              "title": "Taxpaid",
+              "type": "string"
+            },
+            "shortfall": {
+              "default": "0.00",
+              "title": "Shortfall",
+              "type": "string"
+            },
+            "inCycle": {
+              "title": "Incycle",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoicesIssued",
+            "mismatchedClaims",
+            "unreportedInvoices",
+            "taxLiability",
+            "taxPaid",
+            "inCycle"
+          ],
+          "title": "RiskSignal",
+          "type": "object"
+        }
+      },
+      "contract_version": "1.0.0",
+      "entity": "VENDOR_RISK",
+      "properties": {
+        "gstin": {
+          "title": "Gstin",
+          "type": "string"
+        },
+        "legalName": {
+          "title": "Legalname",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        },
+        "band": {
+          "description": "HIGH / MEDIUM / LOW",
+          "title": "Band",
+          "type": "string"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "signals": {
+          "$ref": "#/$defs/RiskSignal"
+        }
+      },
+      "required": [
+        "gstin",
+        "legalName",
+        "score",
+        "band",
+        "signals"
+      ],
+      "title": "VendorRisk",
+      "type": "object"
+    }
+  }
+}

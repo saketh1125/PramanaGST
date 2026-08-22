@@ -1,0 +1,43 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body { margin: 0; background: #0b1120; color: #e2e8f0; }
+
+.shell { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
+header h1 span { color: #60a5fa; }
+header p { margin: 4px 0 20px; color: #64748b; }
+
+.error {
+  background: #7f1d1d33; border: 1px solid #ef4444; border-radius: 8px;
+  padding: 12px 16px; margin-bottom: 16px;
+}
+
+.cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+.card { background: #111a2e; border: 1px solid #1e293b; border-radius: 10px; padding: 14px 16px; }
+.card-value { font-size: 22px; font-weight: 600; }
+.card-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+.split { display: grid; grid-template-columns: minmax(420px, 1fr) minmax(480px, 640px); gap: 16px; align-items: start; }
+.panel { background: #111a2e; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; }
+
+h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-top: 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; color: #64748b; padding: 6px 8px; border-bottom: 1px solid #1e293b; font-weight: 500; }
+td { padding: 7px 8px; border-bottom: 1px solid #16203a; cursor: pointer; }
+tr:hover td, tr.active td { background: #17233f; }
+.mono { font-family: Consolas, monospace; font-size: 12px; color: #94a3b8; }
+
+.badge { color: #0b1120; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 99px; }
+
+.narrative { margin-top: 14px; background: #0e1830; border-left: 3px solid #60a5fa; border-radius: 4px; padding: 10px 14px; }
+.narrative h3 { margin: 0 0 6px; font-size: 12px; color: #60a5fa; text-transform: uppercase; }
+.narrative p { margin: 0; font-size: 13px; line-height: 1.5; color: #cbd5e1; }
+
+.graph-panel .placeholder { height: 520px; display: grid; place-items: center; color: #475569; }
+.legend { display: flex; gap: 14px; margin-top: 10px; font-size: 12px; color: #94a3b8; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }

@@ -30,6 +30,15 @@ from .payment import Payment
 from .return_filing import ReturnFiling
 from .taxpayer import Taxpayer
 
+# entity_type -> model registry used by validation and graph loading
+ENTITY_MODELS = {
+    "TAXPAYER": Taxpayer,
+    "INVOICE": Invoice,
+    "RETURN": ReturnFiling,
+    "PAYMENT": Payment,
+    "IRN": IRN,
+}
+
 __all__ = [
     # Entities
     "Taxpayer",
@@ -37,6 +46,7 @@ __all__ = [
     "ReturnFiling",
     "Payment",
     "IRN",
+    "ENTITY_MODELS",
     # Enums
     "GSTRegistrationType",
     "GSTRegistrationStatus",

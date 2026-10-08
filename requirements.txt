@@ -1,8 +1,10 @@
-fastapi
-uvicorn
-pandas
-numpy
-pydantic
-neo4j
-networkx
-faker
+# PramanaGST runtime dependencies — pinned for reproducible builds.
+# Regenerate deliberately (pip install -r requirements.txt must stay green).
+fastapi==0.135.1
+uvicorn==0.41.0
+pandas==2.3.3
+numpy==2.5.2
+pydantic==2.12.5
+neo4j==6.1.0
+networkx==3.6.1
+faker==40.5.1

@@ -60,9 +60,19 @@ def _llm_narrative(v: VendorRisk) -> str:
         headers={"Content-Type": "application/json",
                  "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"},
     )
+    import time as _time
+
+    _start = _time.perf_counter()
     try:
         with _urlrequest.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read())["choices"][0]["message"]["content"]
-    except Exception:
-        # ponytail: silent fallback keeps audit flow alive; surface LLM errors once ops monitoring exists
+    except Exception as exc:
+        # Template fallback keeps the audit flow alive; the failure is now
+        # observable server-side (reason + latency only — never the payload).
+        try:
+            from backend.api.logging_setup import log_llm_fallback
+
+            log_llm_fallback(type(exc).__name__, (_time.perf_counter() - _start) * 1000)
+        except Exception:
+            pass
         return _template_narrative(v)

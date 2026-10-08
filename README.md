@@ -59,20 +59,37 @@ The system is built on the principle that **"Data must become relationships befo
 ## 🛠 Installation & Setup
 
 ### Prerequisites
-- Python 3.9+
-- Neo4j Desktop / Aura DB
-- Node.js & npm
+- Python 3.12+
+- Node.js 22+ & npm
+- Neo4j 5 (optional — the API runs offline from the seeded CSV batch by default)
 
-### Backend Setup
-1. Clone the repository and navigate to the `backend` folder.
-2. Install dependencies:
-   ```bash
-   pip install fastapi uvicorn neo4j pandas networkx xgboost pydantic
+### Backend setup (local dev, from the repo root)
+```bash
+pip install -r requirements-dev.txt
+uvicorn backend.api.main:app --reload
+```
 
-   Configure your .env with Neo4j credentials and LLM API keys.
+### Frontend setup (from `frontend/`)
+```bash
+npm ci
+npm run dev     # vite dev server on :5173 (API at http://localhost:8000)
+npm run lint    # oxlint
+npm run build   # production bundle into dist/
+```
 
-Run the server:
-uvicorn main:app --reload
+### Backend tests
+```bash
+python -m pytest -q
+```
+
+### Production / containerized run
+Copy `.env.example` to `.env`, set at least `PRAMANAGST_API_KEY`, then:
+```bash
+docker compose up --build
+```
+API on `:8000`, dashboard on `:8080` (same-origin `/api` proxy).
+See `docs/deployment.md` for the full deployment plan, environment reference,
+and staging checklist.
 
 
 

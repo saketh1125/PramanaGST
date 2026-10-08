@@ -5,23 +5,37 @@ reconciliation and risk services.
 Endpoints follow Contracts 2–5. Risk detail/explain are Contract 4;
 risk-summary, the flattened vendor list, the error envelope, and graph
 view models are Contract 5 projections. Contract 5 models live in
-backend/api/models. Auth is out of scope; the analytics context is
-built once per process; set PRAMANAGST_USE_NEO4J=1 to serve projections
-from a live Neo4j instead of the offline batch path.
+backend/api/models.
+
+Runtime configuration comes from backend/api/config.py (environment
+driven; see .env.example). Auth is API-key based when PRAMANAGST_API_KEY
+is set (mandatory in prod) and open otherwise for local development.
+The analytics context is built once per process; set
+PRAMANAGST_USE_NEO4J=1 to serve projections from a live Neo4j instead
+of the offline batch path.
 """
 
 import os
 import sys
+import threading
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from backend.api.config import settings
+from backend.api.logging_setup import (
+    _request_id_middleware,
+    configure_logging,
+    get_logger,
+    log_llm_fallback,
+)
 from backend.graph.builder.projection import build_from_batch, project_from_neo4j
 from backend.ingestion.ingest_service import IngestService
 from backend.reconciliation.engine.matcher import reconcile
@@ -37,65 +51,94 @@ from backend.api.models.contract5 import (
 )
 from backend.risk_ai.models.vendor_risk import VendorRisk, score_vendors
 
-DATA_DIR = os.path.join("backend", "ingestion", "dataset", "generated_data")
+APP_VERSION = "0.1.0"
+DATA_DIR = settings.data_dir
+_REQUIRED_CSVS = ("taxpayers", "gstr1", "gstr2b", "payments", "einvoice")
+
+logger = configure_logging(settings.log_level)
 
 app = FastAPI(
     title="PramanaGST API",
     description="Intelligent GST reconciliation over a knowledge graph.",
-    version="0.1.0",
+    version=APP_VERSION,
+    docs_url="/docs" if settings.docs_enabled else None,
+    redoc_url="/redoc" if settings.docs_enabled else None,
+    openapi_url="/openapi.json" if settings.docs_enabled else None,
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=list(settings.cors_origins),
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-API-Key", "X-Request-ID"],
 )
+app.middleware("http")(_request_id_middleware)
+
+
+def _req_id(request: Request) -> str:
+    return getattr(request.state, "request_id", "-")
+
+
+def _route(request: Request) -> str:
+    route = request.scope.get("route")
+    return getattr(route, "path", None) or request.url.path
 
 
 class _Analytics:
-    """Lazily-built, process-wide analytics snapshot."""
+    """Lazily-built, process-wide analytics snapshot (thread-safe)."""
 
     def __init__(self):
+        self._lock = threading.RLock()
         self._batch = None
         self._graph = None
         self._recon = None
         self._vendors = None
 
     def invalidate(self):
-        self.__init__()
+        with self._lock:
+            self._batch = None
+            self._graph = None
+            self._recon = None
+            self._vendors = None
 
     @property
     def batch(self) -> dict:
-        if self._batch is None:
-            self._batch = IngestService(DATA_DIR).process()
-        return self._batch
+        with self._lock:
+            if self._batch is None:
+                self._batch = IngestService(DATA_DIR).process()
+            return self._batch
 
     @property
     def graph(self):
-        if self._graph is None:
-            if os.environ.get("PRAMANAGST_USE_NEO4J"):
-                try:
-                    self._graph = project_from_neo4j()
-                except Exception as exc:
-                    raise ApiError(503, "SERVICE_UNAVAILABLE", f"Neo4j unavailable: {exc}")
-            else:
-                self._graph = build_from_batch(self.batch)
-        return self._graph
+        with self._lock:
+            if self._graph is None:
+                if settings.use_neo4j:
+                    try:
+                        self._graph = project_from_neo4j(
+                            uri=settings.neo4j_uri, user=settings.neo4j_user,
+                            password=settings.neo4j_password or None)
+                    except Exception:
+                        logger.exception("neo4j.project_failed")
+                        raise ApiError(503, "SERVICE_UNAVAILABLE", "Neo4j unavailable")
+                else:
+                    self._graph = build_from_batch(self.batch)
+            return self._graph
 
     @property
     def recon(self) -> ReconReport:
-        if self._recon is None:
-            raw = reconcile(self.graph)
-            self._recon = ReconReport(summary=raw["summary"], items=raw["items"])
-        return self._recon
+        with self._lock:
+            if self._recon is None:
+                raw = reconcile(self.graph)
+                self._recon = ReconReport(summary=raw["summary"], items=raw["items"])
+            return self._recon
 
     @property
     def vendors(self) -> list[VendorRisk]:
-        if self._vendors is None:
-            raw_recon = {"summary": self.recon.summary.model_dump(by_alias=True),
-                         "items": [i.model_dump(by_alias=True) for i in self.recon.items]}
-            self._vendors = score_vendors(self.graph, raw_recon)
-        return self._vendors
+        with self._lock:
+            if self._vendors is None:
+                raw_recon = {"summary": self.recon.summary.model_dump(by_alias=True),
+                             "items": [i.model_dump(by_alias=True) for i in self.recon.items]}
+                self._vendors = score_vendors(self.graph, raw_recon)
+            return self._vendors
 
 
 _ctx = _Analytics()
@@ -134,6 +177,14 @@ def _error_body(code: str, message: str) -> dict:
 
 @app.exception_handler(ApiError)
 async def api_error_handler(request: Request, exc: ApiError):
+    if exc.status_code >= 500:
+        logger.exception("http.server_error",
+                         extra={"request_id": _req_id(request), "route": _route(request),
+                                "error_code": exc.code, "exc_type": type(exc).__name__})
+    else:
+        logger.warning("http.client_error",
+                       extra={"request_id": _req_id(request), "route": _route(request),
+                              "status": exc.status_code, "error_code": exc.code})
     return JSONResponse(status_code=exc.status_code,
                         content=_error_body(exc.code, exc.detail))
 
@@ -141,6 +192,9 @@ async def api_error_handler(request: Request, exc: ApiError):
 @app.exception_handler(HTTPException)
 async def http_error_handler(request: Request, exc: HTTPException):
     code = getattr(exc, "code", "HTTP_ERROR")
+    logger.warning("http.client_error",
+                   extra={"request_id": _req_id(request), "route": _route(request),
+                          "status": exc.status_code, "error_code": code})
     return JSONResponse(status_code=exc.status_code,
                         content=_error_body(code, str(exc.detail)))
 
@@ -150,6 +204,9 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     message = "; ".join(
         f"{'.'.join(str(p) for p in e['loc'])}: {e['msg']}" for e in exc.errors()
     )
+    logger.warning("http.validation_error",
+                   extra={"request_id": _req_id(request), "route": _route(request),
+                          "status": 422, "error_code": "VALIDATION_ERROR"})
     return JSONResponse(status_code=422,
                         content=_error_body("VALIDATION_ERROR", message))
 
@@ -158,20 +215,37 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 async def starlette_http_error_handler(request: Request, exc: StarletteHTTPException):
     code = "NOT_FOUND" if exc.status_code == 404 else "HTTP_ERROR"
     message = "Route not found" if exc.status_code == 404 and exc.detail == "Not Found" else str(exc.detail)
+    logger.warning("http.client_error",
+                   extra={"request_id": _req_id(request), "route": _route(request),
+                          "status": exc.status_code, "error_code": code})
     return JSONResponse(status_code=exc.status_code,
                         content=_error_body(code, message))
 
 
 @app.exception_handler(Exception)
 async def unhandled_error_handler(request: Request, exc: Exception):
+    logger.exception("http.server_error",
+                     extra={"request_id": _req_id(request), "route": _route(request),
+                            "error_code": "INTERNAL_ERROR", "exc_type": type(exc).__name__})
     return JSONResponse(status_code=500,
                         content=_error_body("INTERNAL_ERROR", "Internal server error"))
+
+
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+def require_api_key(key: str | None = Security(_api_key_header)) -> None:
+    """Prototype-grade auth: enforced only when PRAMANAGST_API_KEY is set."""
+    if not settings.api_key:
+        return
+    if key != settings.api_key:
+        raise ApiError(401, "UNAUTHORIZED", "Invalid or missing API key")
 
 
 # --- Contract 1 surface -------------------------------------------------------
 
 @app.post("/api/v1/ingest", tags=["ingestion"])
-def ingest(persist: bool = False):
+def ingest(persist: bool = False, _guard: None = Depends(require_api_key)):
     """Run the ingestion pipeline; optionally persist to Neo4j."""
     batch = IngestService(DATA_DIR).process()
     result = {"metadata": batch["batch_metadata"]}
@@ -179,12 +253,14 @@ def ingest(persist: bool = False):
         try:
             from backend.graph.builder.loader import Neo4jLoader
 
-            with Neo4jLoader() as loader:
+            with Neo4jLoader(uri=settings.neo4j_uri, user=settings.neo4j_user,
+                             password=settings.neo4j_password or None) as loader:
                 loader.apply_schema()
                 result["persisted"] = loader.load_batch(batch)
-        except Exception as exc:
-            raise ApiError(503, "SERVICE_UNAVAILABLE", f"Neo4j unavailable: {exc}")
-        _ctx.invalidate()
+        except Exception:
+            logger.exception("neo4j.persist_failed")
+            raise ApiError(503, "SERVICE_UNAVAILABLE", "Neo4j unavailable")
+    _ctx.invalidate()
     return result
 
 
@@ -283,4 +359,41 @@ def ego_graph(gstin: str, depth: int = 1):
 
 @app.get("/api/v1/health", tags=["system"])
 def health():
-    return {"status": "ok", "neo4j_mode": bool(os.environ.get("PRAMANAGST_USE_NEO4J"))}
+    return {"status": "ok", "version": APP_VERSION, "neo4j_mode": settings.use_neo4j}
+
+
+def _neo4j_reachable() -> bool:
+    try:
+        from neo4j import GraphDatabase
+
+        driver = GraphDatabase.driver(
+            settings.neo4j_uri,
+            auth=(settings.neo4j_user, settings.neo4j_password),
+            connection_timeout=2,
+        )
+        try:
+            driver.verify_connectivity()
+            return True
+        finally:
+            driver.close()
+    except Exception:
+        logger.warning("ready.neo4j_unreachable")
+        return False
+
+
+@app.get("/api/v1/ready", tags=["system"])
+def ready():
+    """Readiness: dataset present (and Neo4j reachable when enabled)."""
+    checks = {
+        name: os.path.isfile(os.path.join(DATA_DIR, f"{name}.csv"))
+        for name in _REQUIRED_CSVS
+    }
+    checks["dataset"] = all(checks[name] for name in _REQUIRED_CSVS)
+    if settings.use_neo4j:
+        checks["neo4j"] = _neo4j_reachable()
+    ok = all(checks.values())
+    status = 200 if ok else 503
+    if not ok:
+        logger.warning("ready.not_ready", extra={"extra": {"checks": checks}})
+    return JSONResponse(status_code=status,
+                        content={"status": "ready" if ok else "not_ready", "checks": checks})

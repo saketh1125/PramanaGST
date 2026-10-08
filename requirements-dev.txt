@@ -1,0 +1,5 @@
+# Development / test-only dependencies. Never installed in production images.
+-r requirements.txt
+pytest==8.4.2
+httpx==0.28.1
+jsonschema==4.25.1

@@ -11,7 +11,7 @@ from pydantic import ValidationError
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from backend.risk_ai.models.contract4 import AuditNarrativeResponse
-from backend.risk_ai.models.vendor_risk import RiskSignal, VendorRisk
+from backend.risk_ai.models.vendor_risk import EvidenceItem, RiskSignal, VendorRisk
 
 _SIGNAL = {
     "invoicesIssued": 10,
@@ -49,7 +49,7 @@ def test_risksignal_serialization_aliases():
 def test_vendorrisk_serialization_by_alias_contract_keys():
     v = _vendor()
     dumped = v.model_dump(by_alias=True)
-    assert set(dumped) == {"gstin", "legalName", "score", "band", "reasons", "signals"}
+    assert set(dumped) == {"gstin", "legalName", "score", "band", "reasons", "signals", "evidence"}
     assert dumped["legalName"] == "Acme Traders Pvt Ltd"
     assert set(dumped["signals"]) == set(_SIGNAL)
     schema = VendorRisk.model_json_schema()
@@ -115,7 +115,7 @@ def test_contract_schema_build_definitions():
     contract = _build_contract()
     assert contract["title"] == "PramanaGST Contract-4: Risk Intelligence Interface"
     assert contract["version"] == "1.0.0"
-    assert set(contract["definitions"]) == {"RiskSignal", "VendorRisk", "AuditNarrativeResponse"}
+    assert set(contract["definitions"]) == {"RiskSignal", "VendorRisk", "AuditNarrativeResponse", "EvidenceItem"}
     for name, defn in contract["definitions"].items():
         assert "contract_version" in defn and defn["contract_version"] == "1.0.0"
         assert "entity" in defn
@@ -123,7 +123,8 @@ def test_contract_schema_build_definitions():
 
 def test_schema_model_consistency():
     contract = _build_contract()
-    models = {"RiskSignal": RiskSignal, "VendorRisk": VendorRisk, "AuditNarrativeResponse": AuditNarrativeResponse}
+    models = {"RiskSignal": RiskSignal, "VendorRisk": VendorRisk,
+              "AuditNarrativeResponse": AuditNarrativeResponse, "EvidenceItem": EvidenceItem}
     for name, model in models.items():
         defn = contract["definitions"][name]
         model_schema = model.model_json_schema()
@@ -135,7 +136,9 @@ def test_schema_model_consistency():
         assert alias in risksignal_props
     vendor_props = contract["definitions"]["VendorRisk"]["properties"]
     assert "legalName" in vendor_props
-    assert {"gstin", "legalName", "score", "band", "signals"} <= set(vendor_props)
+    assert {"gstin", "legalName", "score", "band", "signals", "evidence"} <= set(vendor_props)
+    evidence_props = contract["definitions"]["EvidenceItem"]["properties"]
+    assert {"finding", "source", "observed", "itemRefs", "nodeIds", "cycleSize", "memberGstins"} <= set(evidence_props)
     narrative_props = contract["definitions"]["AuditNarrativeResponse"]["properties"]
     assert {"contract_version", "entity", "gstin", "narrative"} <= set(narrative_props)
     assert set(contract["definitions"]["AuditNarrativeResponse"]["required"]) == {"gstin", "narrative"}

@@ -35,7 +35,12 @@ def _template_narrative(v: VendorRisk) -> str:
                      "tax payment, or trading-loop checks.")
     else:
         lines.append("Findings: " + "; ".join(v.reasons) + ".")
-    if s.tax_liability != "0.00":
+    try:
+        from decimal import Decimal
+        has_liability = Decimal(str(s.tax_liability or "0")) != 0
+    except Exception:
+        has_liability = s.tax_liability not in ("", "0", "0.00", "0.0")
+    if has_liability:
         lines.append(f"Filed liability INR {s.tax_liability} against payments of INR {s.tax_paid}.")
     return " ".join(lines)
 

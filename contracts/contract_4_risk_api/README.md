@@ -7,10 +7,22 @@ Contract-4 defines the interface between the Risk AI engine and the API layer. I
 Score weights: mismatch 35%, ghost (unreported invoices) 25%, shortfall 25%, cycle 15%.
 Bands: HIGH >= 60, MEDIUM >= 30, LOW < 30.
 
+## Evidence
+
+Every finding is traceable to source facts via `VendorRisk.evidence: list[EvidenceItem]`
+(additive field, default `[]`; older payloads without it remain valid under v1.0.0).
+Each item carries `finding` (MISMATCH | GHOST_UNREPORTED | TAX_SHORTFALL | CYCLE_MEMBERSHIP),
+`source` (reconciliation | knowledge_graph), an `observed` measurement, a human
+`description`, and references: `itemRefs` (claim refs), `nodeIds` (graph node keys),
+`path` (ordered evidence path), plus finding-specific details (`ratio`, `liability`,
+`paid`, `shortfall`, `cycleSize`, `memberGstins`). Lists are capped at 20 entries.
+The LLM narrator receives this structured evidence — never raw graph state — and the
+template fallback always works without an API key.
+
 ## Files
 
-- `../../contracts/contract_4.json` — generated JSON Schema (draft-07), definitions for `RiskSignal`, `VendorRisk`, `AuditNarrativeResponse`
-- `../../backend/risk_ai/models/vendor_risk.py` — canonical `RiskSignal` / `VendorRisk` models (do not duplicate)
+- `../../contracts/contract_4.json` — generated JSON Schema (draft-07), definitions for `RiskSignal`, `VendorRisk`, `EvidenceItem`, `AuditNarrativeResponse`
+- `../../backend/risk_ai/models/vendor_risk.py` — canonical `RiskSignal` / `VendorRisk` / `EvidenceItem` models (do not duplicate)
 - `../../backend/risk_ai/models/contract4.py` — `AuditNarrativeResponse` model
 - `../../backend/risk_ai/explainability/narrator.py` — narrative generation (template fallback; LLM optional via `PRAMANAGST_LLM_URL` + `OPENAI_API_KEY`, never alters score)
 - `examples/vendor_risk.json` — example `VendorRisk` payload

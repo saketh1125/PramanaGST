@@ -24,7 +24,7 @@ Contracts are the foundational API boundaries of PramanaGST. They are defined as
 - **Owner:** Risk AI Team
 - **Consumer:** API Team
 - **Status:** **IMPLEMENTED (v1.0.0)**
-- **Models:** `VendorRisk`, `RiskSignal` (`backend/risk_ai/models/vendor_risk.py`), `AuditNarrativeResponse` (`backend/risk_ai/models/contract4.py`)
+- **Models:** `VendorRisk`, `RiskSignal`, `EvidenceItem` (`backend/risk_ai/models/vendor_risk.py`), `AuditNarrativeResponse` (`backend/risk_ai/models/contract4.py`)
 - **Served by:** `GET /api/v1/risks/{gstin}` (`VendorRisk`), `GET /api/v1/risks/{gstin}/explain` (`AuditNarrativeResponse`; keeps `gstin` + `narrative` top-level)
 - **Generator:** `python scripts/generate_contract4.py` -> `contracts/contract_4.json`
 - **Examples/docs:** `contracts/contract_4_risk_api/`

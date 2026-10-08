@@ -122,7 +122,7 @@ Outputs structured mismatch intelligence.
 
 Produces finalized risk decisions and explanations.
 
-**Status: IMPLEMENTED.** Models: `VendorRisk`, `RiskSignal`, `AuditNarrativeResponse`. Generator: `python scripts/generate_contract4.py` (`contracts/contract_4.json`).
+**Status: IMPLEMENTED.** Models: `VendorRisk`, `RiskSignal`, `EvidenceItem`, `AuditNarrativeResponse`. Generator: `python scripts/generate_contract4.py` (`contracts/contract_4.json`).
 
 ## Contract 5 — API → Dashboard
 

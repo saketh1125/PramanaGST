@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from backend.risk_ai.models.contract4 import AuditNarrativeResponse
-from backend.risk_ai.models.vendor_risk import RiskSignal, VendorRisk
+from backend.risk_ai.models.vendor_risk import EvidenceItem, RiskSignal, VendorRisk
 
 
 def main():
@@ -24,6 +24,7 @@ def main():
             "RiskSignal": RiskSignal.model_json_schema(),
             "VendorRisk": VendorRisk.model_json_schema(),
             "AuditNarrativeResponse": AuditNarrativeResponse.model_json_schema(),
+            "EvidenceItem": EvidenceItem.model_json_schema(),
         },
     }
     out = os.path.join(os.path.dirname(__file__), "..", "contracts", "contract_4.json")

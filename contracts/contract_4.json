@@ -53,6 +53,133 @@
     },
     "VendorRisk": {
       "$defs": {
+        "EvidenceItem": {
+          "contract_version": "1.0.0",
+          "description": "Traceable source fact backing one deterministic risk finding.",
+          "entity": "RISK_EVIDENCE",
+          "properties": {
+            "finding": {
+              "title": "Finding",
+              "type": "string"
+            },
+            "source": {
+              "title": "Source",
+              "type": "string"
+            },
+            "observed": {
+              "title": "Observed",
+              "type": "string"
+            },
+            "description": {
+              "default": "",
+              "title": "Description",
+              "type": "string"
+            },
+            "ratio": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ratio"
+            },
+            "liability": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Liability"
+            },
+            "paid": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Paid"
+            },
+            "shortfall": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Shortfall"
+            },
+            "cycleSize": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Cyclesize"
+            },
+            "memberGstins": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Membergstins",
+              "type": "array"
+            },
+            "itemRefs": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Itemrefs",
+              "type": "array"
+            },
+            "nodeIds": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Nodeids",
+              "type": "array"
+            },
+            "path": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Path"
+            }
+          },
+          "required": [
+            "finding",
+            "source",
+            "observed"
+          ],
+          "title": "EvidenceItem",
+          "type": "object"
+        },
         "RiskSignal": {
           "contract_version": "1.0.0",
           "entity": "RISK_SIGNAL",
@@ -133,6 +260,13 @@
         },
         "signals": {
           "$ref": "#/$defs/RiskSignal"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          },
+          "title": "Evidence",
+          "type": "array"
         }
       },
       "required": [
@@ -173,6 +307,133 @@
         "narrative"
       ],
       "title": "AuditNarrativeResponse",
+      "type": "object"
+    },
+    "EvidenceItem": {
+      "contract_version": "1.0.0",
+      "description": "Traceable source fact backing one deterministic risk finding.",
+      "entity": "RISK_EVIDENCE",
+      "properties": {
+        "finding": {
+          "title": "Finding",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "observed": {
+          "title": "Observed",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ratio"
+        },
+        "liability": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Liability"
+        },
+        "paid": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paid"
+        },
+        "shortfall": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shortfall"
+        },
+        "cycleSize": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cyclesize"
+        },
+        "memberGstins": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Membergstins",
+          "type": "array"
+        },
+        "itemRefs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Itemrefs",
+          "type": "array"
+        },
+        "nodeIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Nodeids",
+          "type": "array"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        }
+      },
+      "required": [
+        "finding",
+        "source",
+        "observed"
+      ],
+      "title": "EvidenceItem",
       "type": "object"
     }
   }

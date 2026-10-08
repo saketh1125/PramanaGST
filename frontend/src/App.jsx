@@ -29,6 +29,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [graphData, setGraphData] = useState(null);
   const [narrative, setNarrative] = useState("");
+  const [detail, setDetail] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -41,8 +42,10 @@ export default function App() {
     setSelected(gstin);
     setGraphData(null);
     setNarrative("…");
+    setDetail(null);
     api.explain(gstin).then((r) => setNarrative(r.narrative)).catch(() => setNarrative(""));
     api.egoGraph(gstin).then(setGraphData).catch(() => setGraphData({ nodes: [], links: [] }));
+    api.vendor(gstin).then(setDetail).catch(() => setDetail(null));
   }
 
   const graphProps = useMemo(() => ({
@@ -120,6 +123,22 @@ export default function App() {
             <div className="narrative">
               <h3>Audit note</h3>
               <p>{narrative}</p>
+            </div>
+          )}
+
+          {detail && detail.evidence && detail.evidence.length > 0 && (
+            <div className="narrative">
+              <h3>Supporting evidence</h3>
+              <ul>
+                {detail.evidence.map((e, i) => (
+                  <li key={i}>
+                    <span className="mono">{e.finding}</span> · {e.description} ({e.observed})
+                    {e.path && e.path.length > 0 && (
+                      <div className="mono">{e.path.join(" → ")}</div>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </section>

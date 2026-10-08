@@ -6,7 +6,7 @@
   "reasons": [
     "3 of 10 invoices have ITC claim mismatches",
     "2 invoices never reported in any GSTR-1 return (ghost billing)",
-    "tax shortfall of INR 15000 against filed liability"
+    "tax shortfall of INR 15000.00 against filed liability"
   ],
   "signals": {
     "invoicesIssued": 10,
@@ -16,5 +16,36 @@
     "taxPaid": "35000.00",
     "shortfall": "15000.00",
     "inCycle": false
-  }
+  },
+  "evidence": [
+    {
+      "finding": "MISMATCH",
+      "source": "reconciliation",
+      "observed": "3/10",
+      "description": "3 of 10 ITC claims diverge from the supplier's books",
+      "ratio": 0.3,
+      "itemRefs": ["OBS-29ABCDE1234F1Z5|INV001"],
+      "path": ["Taxpayer:29ABCDE1234F1Z5", "Invoice:INV001"]
+    },
+    {
+      "finding": "GHOST_UNREPORTED",
+      "source": "knowledge_graph",
+      "observed": "2/10",
+      "description": "2 supplied invoices never appeared in any GSTR-1 return",
+      "ratio": 0.2,
+      "itemRefs": ["INV009", "INV010"],
+      "nodeIds": ["Invoice:INV009", "Invoice:INV010"],
+      "path": ["Taxpayer:29ABCDE1234F1Z5", "Invoice:INV009"]
+    },
+    {
+      "finding": "TAX_SHORTFALL",
+      "source": "knowledge_graph",
+      "observed": "15000.00",
+      "description": "Filed liability 50000.00 against payments of 35000.00",
+      "liability": "50000.00",
+      "paid": "35000.00",
+      "shortfall": "15000.00",
+      "nodeIds": ["ReturnFiling:GSTR1-29ABCDE1234F1Z5-102025"]
+    }
+  ]
 }

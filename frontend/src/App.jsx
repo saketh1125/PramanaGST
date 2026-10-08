@@ -25,14 +25,15 @@ function SummaryCard({ label, value, tone }) {
 export default function App() {
   const [recon, setRecon] = useState(null);
   const [vendors, setVendors] = useState([]);
+  const [riskSummary, setRiskSummary] = useState(null);
   const [selected, setSelected] = useState(null);
   const [graphData, setGraphData] = useState(null);
   const [narrative, setNarrative] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    Promise.all([api.reconciliation(), api.risks()])
-      .then(([r, v]) => { setRecon(r.summary); setVendors(v); })
+    Promise.all([api.reconciliation(), api.risks(), api.riskSummary()])
+      .then(([r, v, s]) => { setRecon(r.summary); setVendors(v); setRiskSummary(s); })
       .catch((e) => setError(`API unreachable — start uvicorn. (${e.message})`));
   }, []);
 
@@ -84,6 +85,16 @@ export default function App() {
         </section>
       )}
 
+      {riskSummary && (
+        <section className="cards">
+          <SummaryCard label="Vendors" value={riskSummary.totalVendors} />
+          <SummaryCard label="High risk" value={riskSummary.highRisk} tone="HIGH" />
+          <SummaryCard label="Medium risk" value={riskSummary.mediumRisk} tone="MEDIUM" />
+          <SummaryCard label="Low risk" value={riskSummary.lowRisk} tone="LOW" />
+          <SummaryCard label="Avg score" value={riskSummary.averageScore.toFixed(2)} />
+        </section>
+      )}
+
       <main className="split">
         <section className="panel">
           <h2>Vendor risk</h2>
@@ -97,7 +108,7 @@ export default function App() {
                     className={v.gstin === selected ? "active" : ""}>
                   <td>{v.legalName}</td>
                   <td className="mono">{v.gstin}</td>
-                  <td>{v.signals.invoicesIssued}</td>
+                  <td>{v.invoicesIssued}</td>
                   <td>{v.score.toFixed(1)}</td>
                   <td><span className="badge" style={{ background: BAND_COLOR[v.band] }}>{v.band}</span></td>
                 </tr>

@@ -1,0 +1,9 @@
+{
+  "contract_version": "1.0.0",
+  "entity": "RISK_SUMMARY",
+  "totalVendors": 20,
+  "highRisk": 4,
+  "mediumRisk": 7,
+  "lowRisk": 9,
+  "averageScore": 31.42
+}

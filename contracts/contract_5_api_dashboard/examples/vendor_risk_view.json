@@ -1,0 +1,13 @@
+{
+  "contract_version": "1.0.0",
+  "entity": "VENDOR_RISK_VIEW",
+  "gstin": "29ABCDE1234F1Z5",
+  "legalName": "Acme Traders Pvt Ltd",
+  "score": 72.5,
+  "band": "HIGH",
+  "reasons": [
+    "3 of 10 invoices have ITC claim mismatches",
+    "2 invoices never reported in any GSTR-1 return (ghost billing)"
+  ],
+  "invoicesIssued": 10
+}

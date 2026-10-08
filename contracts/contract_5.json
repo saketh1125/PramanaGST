@@ -1,0 +1,362 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PramanaGST Contract-5: Dashboard View Models",
+  "version": "1.0.0",
+  "definitions": {
+    "RiskSummary": {
+      "entity": "RISK_SUMMARY",
+      "properties": {
+        "contract_version": {
+          "default": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "entity": {
+          "default": "RISK_SUMMARY",
+          "title": "Entity",
+          "type": "string"
+        },
+        "totalVendors": {
+          "minimum": 0,
+          "title": "Totalvendors",
+          "type": "integer"
+        },
+        "highRisk": {
+          "minimum": 0,
+          "title": "Highrisk",
+          "type": "integer"
+        },
+        "mediumRisk": {
+          "minimum": 0,
+          "title": "Mediumrisk",
+          "type": "integer"
+        },
+        "lowRisk": {
+          "minimum": 0,
+          "title": "Lowrisk",
+          "type": "integer"
+        },
+        "averageScore": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Averagescore",
+          "type": "number"
+        }
+      },
+      "required": [
+        "totalVendors",
+        "highRisk",
+        "mediumRisk",
+        "lowRisk",
+        "averageScore"
+      ],
+      "title": "RiskSummary",
+      "type": "object"
+    },
+    "VendorRiskView": {
+      "description": "Flattened presentation projection of Contract 4 VendorRisk.\n\nDetailed risk signals (mismatchedClaims, unreportedInvoices,\ntaxLiability, taxPaid, shortfall, inCycle) are intentionally omitted;\nfetch them from GET /api/v1/risks/{gstin}.",
+      "entity": "VENDOR_RISK_VIEW",
+      "properties": {
+        "contract_version": {
+          "default": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "entity": {
+          "default": "VENDOR_RISK_VIEW",
+          "title": "Entity",
+          "type": "string"
+        },
+        "gstin": {
+          "title": "Gstin",
+          "type": "string"
+        },
+        "legalName": {
+          "title": "Legalname",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        },
+        "band": {
+          "title": "Band",
+          "type": "string"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "invoicesIssued": {
+          "minimum": 0,
+          "title": "Invoicesissued",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "gstin",
+        "legalName",
+        "score",
+        "band",
+        "invoicesIssued"
+      ],
+      "title": "VendorRiskView",
+      "type": "object"
+    },
+    "GraphNode": {
+      "additionalProperties": false,
+      "description": "Whitelisted node payload for the dashboard force graph.\n\nNo contract_version/entity per node: the GraphView envelope carries\nthe metadata. extra=\"forbid\" keeps internal graph attributes out.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "legalName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legalname"
+        },
+        "invoiceNumber": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Invoicenumber"
+        },
+        "returnId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Returnid"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "GraphNode",
+      "type": "object"
+    },
+    "GraphLink": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
+        }
+      },
+      "required": [
+        "source",
+        "target"
+      ],
+      "title": "GraphLink",
+      "type": "object"
+    },
+    "GraphView": {
+      "$defs": {
+        "GraphLink": {
+          "additionalProperties": false,
+          "properties": {
+            "source": {
+              "title": "Source",
+              "type": "string"
+            },
+            "target": {
+              "title": "Target",
+              "type": "string"
+            },
+            "type": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Type"
+            }
+          },
+          "required": [
+            "source",
+            "target"
+          ],
+          "title": "GraphLink",
+          "type": "object"
+        },
+        "GraphNode": {
+          "additionalProperties": false,
+          "description": "Whitelisted node payload for the dashboard force graph.\n\nNo contract_version/entity per node: the GraphView envelope carries\nthe metadata. extra=\"forbid\" keeps internal graph attributes out.",
+          "properties": {
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "label": {
+              "title": "Label",
+              "type": "string"
+            },
+            "legalName": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Legalname"
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Invoicenumber"
+            },
+            "returnId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Returnid"
+            }
+          },
+          "required": [
+            "id",
+            "label"
+          ],
+          "title": "GraphNode",
+          "type": "object"
+        }
+      },
+      "entity": "GRAPH_VIEW",
+      "properties": {
+        "contract_version": {
+          "default": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "entity": {
+          "default": "GRAPH_VIEW",
+          "title": "Entity",
+          "type": "string"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/GraphNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/GraphLink"
+          },
+          "title": "Links",
+          "type": "array"
+        }
+      },
+      "title": "GraphView",
+      "type": "object"
+    },
+    "ErrorResponse": {
+      "$defs": {
+        "ErrorDetail": {
+          "properties": {
+            "code": {
+              "title": "Code",
+              "type": "string"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "title": "ErrorDetail",
+          "type": "object"
+        }
+      },
+      "entity": "ERROR",
+      "properties": {
+        "contract_version": {
+          "default": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "entity": {
+          "default": "ERROR",
+          "title": "Entity",
+          "type": "string"
+        },
+        "error": {
+          "$ref": "#/$defs/ErrorDetail"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "title": "ErrorResponse",
+      "type": "object"
+    }
+  }
+}

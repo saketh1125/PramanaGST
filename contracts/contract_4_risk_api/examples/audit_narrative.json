@@ -1,0 +1,6 @@
+{
+  "contract_version": "1.0.0",
+  "entity": "AUDIT_NARRATIVE",
+  "gstin": "29ABCDE1234F1Z5",
+  "narrative": "Vendor Acme Traders Pvt Ltd (29ABCDE1234F1Z5) carries HIGH compliance risk (score 72.5/100) based on 10 issued invoice(s). Findings: 3 of 10 invoices have ITC claim mismatches; 2 invoices never reported in any GSTR-1 return (ghost billing); tax shortfall of INR 15000.00 against filed liability."
+}

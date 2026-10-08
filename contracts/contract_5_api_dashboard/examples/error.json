@@ -1,0 +1,8 @@
+{
+  "contract_version": "1.0.0",
+  "entity": "ERROR",
+  "error": {
+    "code": "TAXPAYER_NOT_FOUND",
+    "message": "Taxpayer 99NOPE0000X1Z9 not found"
+  }
+}

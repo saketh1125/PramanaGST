@@ -9,6 +9,7 @@ async function get(path) {
 export const api = {
   reconciliation: () => get("/api/v1/reconciliation"),
   risks: () => get("/api/v1/risks"),
+  riskSummary: () => get("/api/v1/risk-summary"),
   explain: (gstin) => get(`/api/v1/risks/${gstin}/explain`),
   egoGraph: (gstin, depth = 2) => get(`/api/v1/graph/ego/${gstin}?depth=${depth}`),
 };

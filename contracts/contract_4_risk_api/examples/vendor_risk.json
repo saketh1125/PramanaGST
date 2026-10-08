@@ -1,0 +1,20 @@
+{
+  "gstin": "29ABCDE1234F1Z5",
+  "legalName": "Acme Traders Pvt Ltd",
+  "score": 72.5,
+  "band": "HIGH",
+  "reasons": [
+    "3 of 10 invoices have ITC claim mismatches",
+    "2 invoices never reported in any GSTR-1 return (ghost billing)",
+    "tax shortfall of INR 15000 against filed liability"
+  ],
+  "signals": {
+    "invoicesIssued": 10,
+    "mismatchedClaims": 3,
+    "unreportedInvoices": 2,
+    "taxLiability": "50000.00",
+    "taxPaid": "35000.00",
+    "shortfall": "15000.00",
+    "inCycle": false
+  }
+}

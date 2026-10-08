@@ -1,0 +1,13 @@
+{
+  "contract_version": "1.0.0",
+  "entity": "GRAPH_VIEW",
+  "nodes": [
+    {"id": "Taxpayer:29ABCDE1234F1Z5", "label": "Taxpayer", "legalName": "Acme Traders Pvt Ltd"},
+    {"id": "Invoice:INV-001", "label": "Invoice", "invoiceNumber": "INV-001"},
+    {"id": "ReturnFiling:GSTR1-29ABCDE1234F1Z5-102025", "label": "ReturnFiling", "returnId": "GSTR1-29ABCDE1234F1Z5-102025"}
+  ],
+  "links": [
+    {"source": "Taxpayer:29ABCDE1234F1Z5", "target": "Invoice:INV-001", "type": "SUPPLIED"},
+    {"source": "Invoice:INV-001", "target": "ReturnFiling:GSTR1-29ABCDE1234F1Z5-102025", "type": "REPORTED_IN"}
+  ]
+}

@@ -11,7 +11,7 @@ flowchart TD
     B -->|Contract 1: Canonical JSON| C[(Neo4j Knowledge Graph)]
     C -->|Contract 2: Graph Subsets| D[Reconciliation Engine]
     D -->|Contract 3: Mismatch Vectors| E[Risk AI Layer]
-    E -->|Contract 4: Scored Entities| F[API Layer]
+    E -->|Contract 4: Risk Intelligence| F[API Layer]
     F -->|Contract 5: View Models| G[Frontend Dashboard]
 
     %% Styling
@@ -26,5 +26,5 @@ flowchart TD
 3. **Reconciliation Engine:** Queries the graph (Contract 2) to identify anomalies:
    - Invoice exists in GSTR-1 but not in GSTR-2B.
    - ITC claimed in GSTR-3B exceeds eligible ITC from supplier invoices.
-4. **Risk AI Layer:** Ingests the output vectors of the Reconciliation Engine (Contract 3). Applies lightweight ML models to classify risk severity and generates an explainable audit narrative.
-5. **API Layer:** Wraps the entire backend stack in a FastAPI application, serving endpoints formatted to Contract 5 for UI consumption.
+4. **Risk AI Layer:** Ingests the output vectors of the Reconciliation Engine (Contract 3). Scores vendor risk deterministically and generates an explainable audit narrative — Contract 4 (`VendorRisk`, `RiskSignal`, `AuditNarrativeResponse`).
+5. **API Layer:** Wraps the entire backend stack in a FastAPI application, serving endpoints formatted to Contract 5 for UI consumption — Contract 5 view models (`RiskSummary`, `VendorRiskView`, `GraphView`, `ErrorResponse`).

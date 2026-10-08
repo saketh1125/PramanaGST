@@ -122,9 +122,13 @@ Outputs structured mismatch intelligence.
 
 Produces finalized risk decisions and explanations.
 
+**Status: IMPLEMENTED.** Models: `VendorRisk`, `RiskSignal`, `AuditNarrativeResponse`. Generator: `python scripts/generate_contract4.py` (`contracts/contract_4.json`).
+
 ## Contract 5 — API → Dashboard
 
 Provides UI-ready responses.
+
+**Status: IMPLEMENTED.** Models: `RiskSummary`, `VendorRiskView`, `GraphNode`, `GraphLink`, `GraphView`, `ErrorResponse`. Generator: `python scripts/generate_contract5.py` (`contracts/contract_5.json`). Endpoints: `GET /api/v1/risk-summary`, `GET /api/v1/risks`, `GET /api/v1/graph/ego/{gstin}`. Auth is out of scope.
 
 ---
 

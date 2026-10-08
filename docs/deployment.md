@@ -92,9 +92,16 @@ tests — see its README). Serve with
    template narration (no LLM env), logs contain no secrets.
 6. If Neo4j mode: `POST /api/v1/ingest?persist=true` with key, re-run ready.
 
-## 8. Honest status
+## 8. Honest status (updated P10)
 
-Dockerfiles + compose + CI were written but **not built here** (no Docker
-daemon on this machine) — CI's docker job is the first real build gate.
+Dockerfiles + compose + CI were written but **never built** (no Docker
+daemon on this machine). Worse: CI run #1 (commit `bd25e6d`) **failed** on
+the backend job — `generated_data/` is gitignored, so the runner had zero
+CSVs and the suite failed exactly as reproduced locally. Fix (in working
+tree, uncommitted): generate the seeded fixture in CI before pytest, plus a
+dummy key for `compose config` — verified byte-deterministic and green
+end-to-end from an empty directory. The docker job was skipped as a
+consequence and has never run anywhere yet.
 Everything else above (config, auth, CORS, logging, health/ready, pins,
-tests, prod-mode uvicorn smoke) was executed and verified locally.
+tests, prod-mode uvicorn smoke, demo serving, bundle secret scan) was
+executed and verified locally. Do not deploy before a green CI run.

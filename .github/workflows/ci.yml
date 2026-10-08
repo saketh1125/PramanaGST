@@ -17,6 +17,11 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
+      - name: Generate fixture dataset
+        # generated_data/ is gitignored, so CI starts empty; the generator
+        # is seeded (SEED=42) and byte-deterministic — this reproduces the
+        # exact fixture the suite asserts against (361 records, 91 claims).
+        run: python scripts/dataset_generator.py
       - name: Backend tests
         run: python -m pytest -q
       - name: Contract schema determinism
@@ -62,6 +67,9 @@ jobs:
   docker:
     needs: [backend, frontend]
     runs-on: ubuntu-latest
+    # compose config fail-fast requires an API key value; never a real secret.
+    env:
+      PRAMANAGST_API_KEY: ci-dummy-key
     steps:
       - uses: actions/checkout@v4
       - run: docker compose config --quiet

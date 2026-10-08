@@ -36,6 +36,17 @@ Known, tested limitations (see `tests/test_risk_engine_hardening.py`):
 - One payment linked from several GSTR-1 returns is summed once per return.
 - A supplier missing from reconciliation silently scores zero mismatches.
 - `recon_report` must carry `"items"` (KeyError otherwise) — strict by design.
+- `GHOST_UNREPORTED` is currently unreachable end-to-end (P10 finding): the
+  batch builder auto-emits one GSTR-1 return per (supplier, period)
+  (`ingest_service.py`), and the projection links every supplied invoice to
+  it via `REPORTED_IN` (`projection.py`), so the ghost rate is always 0
+  through the CSV **and** Neo4j paths (both persist the same RETURN
+  entities). This is a data-model limitation of the synthetic pipeline, not
+  a scoring bug — the ghost term, `RiskSignal.unreportedInvoices`, and
+  `GHOST_UNREPORTED` evidence are implemented, unit-tested
+  (`test_ghost_only_scores_25_low`, `test_ghost_evidence_names_invoice_nodes`),
+  and reserved for real feeds where a supplier invoice can exist without its
+  GSTR-1 return. Do not "fix" by special-casing the demo data.
 
 ## 3. Evidence generation
 

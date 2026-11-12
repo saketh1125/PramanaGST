@@ -16,7 +16,7 @@ By modeling taxpayers, invoices, return filings, and tax payments as interconnec
 - **Backend:** Python 3.11+, FastAPI, Pydantic, Pandas
 - **Knowledge Graph:** Neo4j (Cypher)
 - **AI/ML:** Scikit-learn, XGBoost (Risk scoring)
-- **Frontend:** React, TailwindCSS, Force Graph
+- **Frontend:** React, Force Graph
 
 ## The "Layered Contract" Philosophy
 To enable high-velocity parallel development, PramanaGST employs a strict **Contract-driven Architecture**. The system is divided into five isolated layers. Communication between layers occurs *exclusively* via versioned JSON schemas (Contracts). As long as a layer fulfills its output contract, its internal implementation can be freely optimized or rewritten without breaking dependent teams.
